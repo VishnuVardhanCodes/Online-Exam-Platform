@@ -5,7 +5,7 @@ from utils.decorators import token_required, role_required, validate_request_jso
 from datetime import datetime
 import random
 from sqlalchemy import func
-
+ 
 quizzes_bp = Blueprint('quizzes', __name__)
 
 @quizzes_bp.route('', methods=['GET'])

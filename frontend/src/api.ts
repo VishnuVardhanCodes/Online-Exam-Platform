@@ -189,6 +189,27 @@ class APIClient {
   submitQuizAttempt(attemptId: string) {
     return this.client.post(`/attempts/${attemptId}/submit`)
   }
+
+  // Question Generation endpoints
+  generateAIQuestions(topic: string, numQuestions: number, difficulty: string) {
+    return this.client.post('/quizzes/generate/questions', {
+      topic,
+      numQuestions,
+      difficulty,
+    })
+  }
+
+  // Quiz Assignment endpoints
+  assignQuizToStudents(quizId: string, studentIds: string[], dueDate: string) {
+    return this.client.post(`/quizzes/${quizId}/assign`, {
+      studentIds,
+      dueDate,
+    })
+  }
+
+  getAssignedQuizzes() {
+    return this.client.get('/quizzes/student/assigned')
+  }
 }
 
 export const apiClient = new APIClient()

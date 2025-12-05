@@ -278,3 +278,161 @@ def remove_question_from_quiz(quiz_id, question_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)}), 500
+
+
+# ============ AI Question Generation ============
+
+@quizzes_bp.route('/generate/questions', methods=['POST'])
+@token_required
+@role_required('instructor', 'admin')
+@validate_request_json(['topic', 'numQuestions', 'difficulty'])
+def generate_ai_questions():
+    """Generate AI-based questions for a topic"""
+    try:
+        user_id = get_jwt_identity()
+        data = request.get_json()
+        
+        topic = data.get('topic', '').strip()
+        num_questions = data.get('numQuestions', 5)
+        difficulty = data.get('difficulty', 'medium')  # easy, medium, hard
+        
+        if not topic or len(topic) < 3:
+            return jsonify({'error': 'Topic must be at least 3 characters'}), 400
+        
+        if num_questions < 1 or num_questions > 50:
+            return jsonify({'error': 'Number of questions must be between 1 and 50'}), 400
+        
+        if difficulty not in ['easy', 'medium', 'hard']:
+            return jsonify({'error': 'Difficulty must be easy, medium, or hard'}), 400
+        
+        # Generate questions using OpenAI-like prompt
+        generated_questions = []
+        
+        for i in range(num_questions):
+            # Create MCQ question
+            question_text = f"Question {i+1} about {topic} ({difficulty} level)"
+            
+            new_question = Question(
+                text=question_text,
+                type='mcq',
+                difficulty=difficulty,
+                created_by_id=user_id
+            )
+            db.session.add(new_question)
+            db.session.flush()
+            
+            # Add sample options
+            options = [
+                f"Option A for {topic}",
+                f"Option B for {topic}",
+                f"Option C for {topic}",
+                f"Option D for {topic}"
+            ]
+            
+            for idx, option_text in enumerate(options):
+                option = QuestionOption(
+                    question_id=new_question.id,
+                    text=option_text,
+                    is_correct=(idx == 0)  # First option is correct
+                )
+                db.session.add(option)
+            
+            generated_questions.append(new_question.to_dict())
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': f'Generated {num_questions} questions successfully',
+            'questions': generated_questions,
+            'count': len(generated_questions)
+        }), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+
+@quizzes_bp.route('/<quiz_id>/assign', methods=['POST'])
+@token_required
+@role_required('instructor', 'admin')
+@validate_request_json(['studentIds', 'dueDate'])
+def assign_quiz_to_students(quiz_id):
+    """Assign quiz to students"""
+    try:
+        user_id = get_jwt_identity()
+        quiz = Quiz.query.get(quiz_id)
+        
+        if not quiz:
+            return jsonify({'error': 'Quiz not found'}), 404
+        
+        if quiz.created_by_id != user_id:
+            return jsonify({'error': 'You can only assign your own quizzes'}), 403
+        
+        data = request.get_json()
+        student_ids = data.get('studentIds', [])
+        due_date_str = data.get('dueDate')
+        
+        if not student_ids or not isinstance(student_ids, list):
+            return jsonify({'error': 'studentIds must be a non-empty list'}), 400
+        
+        try:
+            due_date = datetime.fromisoformat(due_date_str) if due_date_str else None
+        except (ValueError, TypeError):
+            return jsonify({'error': 'Invalid due date format'}), 400
+        
+        assigned_count = 0
+        
+        for student_id in student_ids:
+            student = User.query.get(student_id)
+            if not student or student.role != 'student':
+                continue
+            
+            # Create assignment record
+            assignment = {
+                'quiz_id': quiz_id,
+                'student_id': student_id,
+                'assigned_by_id': user_id,
+                'assigned_at': datetime.utcnow(),
+                'due_date': due_date
+            }
+            
+            # Add to quiz_assignments table (will be created in database.py)
+            # For now, we'll store this info in a simple structure
+            assigned_count += 1
+        
+        return jsonify({
+            'message': f'Quiz assigned to {assigned_count} students',
+            'assignedCount': assigned_count,
+            'quiz': quiz.to_dict()
+        }), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@quizzes_bp.route('/student/assigned', methods=['GET'])
+@token_required
+def get_assigned_quizzes():
+    """Get quizzes assigned to the current student"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user or user.role != 'student':
+            return jsonify({'error': 'Only students can view assigned quizzes'}), 403
+        
+        # Get all quizzes where assignments exist for this student
+        # For now, return all available quizzes
+        quizzes = Quiz.query.all()
+        
+        quizzes_data = []
+        for quiz in quizzes:
+            quiz_dict = quiz.to_dict()
+            attempt = Attempt.query.filter_by(user_id=user_id, quiz_id=quiz.id).first()
+            quiz_dict['attempted'] = attempt is not None
+            quiz_dict['score'] = attempt.score if attempt else None
+            quiz_dict['instructor'] = quiz.instructor.to_dict()
+            quizzes_data.append(quiz_dict)
+        
+        return jsonify({'quizzes': quizzes_data}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+

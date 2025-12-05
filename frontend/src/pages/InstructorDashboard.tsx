@@ -2,13 +2,18 @@ import React, { useEffect, useState } from 'react'
 import { useAuthStore } from '../store'
 import { apiClient } from '../api'
 import Layout from '../components/Layout'
-import { Plus, Edit2, Trash2, Eye, BarChart3, BookOpen, Users, TrendingUp, Clock } from 'lucide-react'
+import { GenerateQuestions } from '../components/GenerateQuestions'
+import { AssignQuiz } from '../components/AssignQuiz'
+import { Plus, Edit2, Trash2, Eye, BarChart3, BookOpen, Users, TrendingUp, Clock, Zap, Send } from 'lucide-react'
 
 export default function InstructorDashboard() {
   const { user } = useAuthStore()
   const [quizzes, setQuizzes] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [activeTab, setActiveTab] = useState<'quizzes' | 'generate' | 'assign'>('quizzes')
+  const [selectedQuizForAssign, setSelectedQuizForAssign] = useState<any | null>(null)
+  const [generatedQuestions, setGeneratedQuestions] = useState<any[]>([])
   const [formData, setFormData] = useState({
     title: '',
     description: '',

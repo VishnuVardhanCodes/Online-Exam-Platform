@@ -161,6 +161,10 @@ class APIClient {
     return this.client.get('/instructor/questions', { params: { difficulty, tag } })
   }
 
+  createQuestionOption(questionId: string, data: any) {
+    return this.client.post(`/instructor/questions/${questionId}/options`, data)
+  }
+
   getQuizAnalytics(quizId: string) {
     return this.client.get(`/instructor/analytics/${quizId}`)
   }

@@ -94,7 +94,7 @@ export default function LoginPage() {
                       onFocus={() => setFocusedField('email')}
                       onBlur={() => setFocusedField(null)}
                       required
-                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 focus:shadow-lg dark:bg-gray-700 dark:text-white transition-all duration-200"
+                      className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 focus:shadow-lg dark:bg-gray-700 dark:text-white bg-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
                       placeholder="you@example.com"
                     />
                   </div>
@@ -115,7 +115,7 @@ export default function LoginPage() {
                       onFocus={() => setFocusedField('password')}
                       onBlur={() => setFocusedField(null)}
                       required
-                      className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 focus:shadow-lg dark:bg-gray-700 dark:text-white transition-all duration-200"
+                      className="w-full pl-12 pr-12 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:border-blue-500 focus:shadow-lg dark:bg-gray-700 dark:text-white bg-white text-gray-900 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
                       placeholder="••••••••"
                     />
                     <button

@@ -121,7 +121,7 @@ export const AssignQuiz: React.FC<AssignQuizProps> = ({ quizId, quizTitle, onAss
             type="datetime-local"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-gray-900 bg-white dark:bg-gray-900 dark:text-white"
             title="Set the due date for this assignment"
           />
         </div>

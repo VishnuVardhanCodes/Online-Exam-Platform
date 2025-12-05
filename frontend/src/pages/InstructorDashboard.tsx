@@ -4,7 +4,7 @@ import { apiClient } from '../api'
 import Layout from '../components/Layout'
 import { GenerateQuestions } from '../components/GenerateQuestions'
 import { AssignQuiz } from '../components/AssignQuiz'
-import { Plus, Edit2, Trash2, Eye, BarChart3, BookOpen, Users, TrendingUp, Clock, Zap, Send } from 'lucide-react'
+import { Plus, Edit2, Trash2, BarChart3, BookOpen, Users, TrendingUp, Clock, Zap, Send } from 'lucide-react'
 
 export default function InstructorDashboard() {
   const { user } = useAuthStore()
@@ -32,6 +32,7 @@ export default function InstructorDashboard() {
     try {
       setLoading(true)
       const response = await apiClient.getQuizzes('all')
+      console.log('Loaded quizzes:', response.data.quizzes)
       setQuizzes(response.data.quizzes || [])
     } catch (err) {
       console.error('Failed to load quizzes:', err)
@@ -65,7 +66,7 @@ export default function InstructorDashboard() {
     if (window.confirm('Are you sure you want to delete this quiz?')) {
       try {
         await apiClient.deleteQuiz(quizId)
-        setQuizzes(quizzes.filter(q => q.id !== quizId))
+        setQuizzes(quizzes.filter(q => q.quizId !== quizId))
       } catch (err) {
         console.error('Failed to delete quiz:', err)
         alert('Failed to delete quiz. Please try again.')
@@ -122,17 +123,49 @@ export default function InstructorDashboard() {
           })}
         </div>
 
-        {/* Header with Create Button */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">My Quizzes</h2>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 transition transform hover:scale-105"
-          >
-            <Plus size={20} />
-            Create New Quiz
-          </button>
+        {/* Tabs */}
+        <div className="mb-8">
+          <div className="inline-flex rounded-xl bg-gray-100 dark:bg-gray-800 p-1 shadow-inner">
+            {([
+              { key: 'quizzes', label: 'Manage Quizzes', icon: BookOpen },
+              { key: 'generate', label: 'AI Question Generator', icon: Zap },
+              { key: 'assign', label: 'Assign Quiz', icon: Send },
+            ] as const).map((tab) => {
+              const Icon = tab.icon
+              const isActive = activeTab === tab.key
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-semibold transition-all ${
+                    isActive
+                      ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-300 shadow'
+                      : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-300'
+                  }`}
+                  title={tab.label}
+                >
+                  <Icon size={18} />
+                  {tab.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
+
+        {/* Tab Content */}
+        {activeTab === 'quizzes' && (
+          <>
+            {/* Header with Create Button */}
+            <div className="flex justify-between items-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">My Quizzes</h2>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-6 py-3 rounded-lg font-bold flex items-center gap-2 transition transform hover:scale-105"
+              >
+                <Plus size={20} />
+                Create New Quiz
+              </button>
+            </div>
 
         {/* Create Quiz Modal */}
         {showCreateModal && (
@@ -171,6 +204,8 @@ export default function InstructorDashboard() {
                       value={formData.durationSeconds}
                       onChange={(e) => setFormData({ ...formData, durationSeconds: parseInt(e.target.value) })}
                       required
+                      placeholder="e.g., 3600"
+                      title="Enter quiz duration in seconds"
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
                     />
                   </div>
@@ -182,6 +217,8 @@ export default function InstructorDashboard() {
                       value={formData.maxAttempts}
                       onChange={(e) => setFormData({ ...formData, maxAttempts: parseInt(e.target.value) })}
                       required
+                      placeholder="e.g., 1"
+                      title="Enter maximum attempts allowed"
                       className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
                     />
                   </div>
@@ -195,7 +232,9 @@ export default function InstructorDashboard() {
                     max="100"
                     value={formData.passingScore}
                     onChange={(e) => setFormData({ ...formData, passingScore: parseFloat(e.target.value) })}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
+                      placeholder="e.g., 40"
+                      title="Enter passing score percentage"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
                   />
                 </div>
 
@@ -245,7 +284,7 @@ export default function InstructorDashboard() {
                 const isUpcoming = quiz.startTime > now
                 return (
                   <div
-                    key={quiz.id}
+                    key={quiz.quizId}
                     className="group bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden transform hover:scale-105"
                   >
                     {/* Header Bar */}
@@ -309,7 +348,7 @@ export default function InstructorDashboard() {
                         </button>
                         <button
                           title="Delete Quiz"
-                          onClick={() => handleDeleteQuiz(quiz.id)}
+                          onClick={() => handleDeleteQuiz(quiz.quizId)}
                           className="flex-1 p-2 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition font-medium flex items-center justify-center gap-2"
                         >
                           <Trash2 size={18} />
@@ -323,6 +362,110 @@ export default function InstructorDashboard() {
             </div>
           )}
         </div>
+          </>
+        )}
+
+        {activeTab === 'generate' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <GenerateQuestions 
+              onQuestionsGenerated={setGeneratedQuestions}
+              quizzes={quizzes}
+              onQuestionsAdded={() => {
+                loadQuizzes()
+              }}
+            />
+
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow border border-gray-100 dark:border-gray-700">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Generated Questions</h3>
+                <span className="text-sm text-gray-500">{generatedQuestions.length} ready</span>
+              </div>
+              {generatedQuestions.length === 0 ? (
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Generate questions to preview them here.</p>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {generatedQuestions.map((q, idx) => (
+                    <div key={idx} className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/40">
+                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Q{idx + 1}. {q.text || q.question || 'Question text'}</p>
+                      {q.options && Array.isArray(q.options) && (
+                        <ul className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-400">
+                          {q.options.map((opt: any, i: number) => {
+                            // Check both isCorrect (from backend) and is_correct (from AI generation)
+                            const isCorrect = opt.isCorrect === true || opt.is_correct === true
+                            return (
+                              <li key={i} className={`flex items-center justify-between rounded px-2 py-1 ${isCorrect ? 'text-green-700 dark:text-green-300 font-semibold bg-green-100 dark:bg-green-900/30' : ''}`}>
+                                <span>{String.fromCharCode(65 + i)}. {opt.text || opt}</span>
+                                {isCorrect && <span className="text-green-700 dark:text-green-300 font-bold ml-2">✓ CORRECT</span>}
+                              </li>
+                            )
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'assign' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow border border-gray-100 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Select a Quiz to Assign</h3>
+              <p className="text-sm text-gray-500 mb-3">Choose a quiz and assign it to students with a due date.</p>
+
+              <div className="space-y-3">
+                {quizzes.length === 0 ? (
+                  <p className="text-gray-500">No quizzes available. Create a quiz first.</p>
+                ) : (
+                  quizzes.map((quiz) => (
+                    <label
+                      key={quiz.quizId}
+                      className={`block border rounded-lg p-3 cursor-pointer transition ${
+                        selectedQuizForAssign?.quizId === quiz.quizId
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-blue-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="quiz-select"
+                        className="mr-3 accent-blue-600"
+                        checked={selectedQuizForAssign?.quizId === quiz.quizId}
+                        onChange={() => setSelectedQuizForAssign(quiz)}
+                        title={`Select ${quiz.title}`}
+                        aria-label={`Select quiz ${quiz.title}`}
+                      />
+                      <span className="font-semibold text-gray-800 dark:text-gray-100">{quiz.title}</span>
+                      <span className="ml-2 text-xs text-gray-500">{quiz.questionIds?.length || 0} questions</span>
+                    </label>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div>
+              {selectedQuizForAssign ? (
+                <AssignQuiz
+                  quizId={selectedQuizForAssign.quizId}
+                  quizTitle={selectedQuizForAssign.title}
+                  onAssignmentComplete={() => {
+                    setActiveTab('quizzes')
+                    loadQuizzes()
+                  }}
+                />
+              ) : (
+                <div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6 border border-green-100 dark:border-gray-700 h-full flex items-center justify-center text-center">
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Select a quiz to assign</h4>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">Choose a quiz from the list to start assigning it to students.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </Layout>
   )

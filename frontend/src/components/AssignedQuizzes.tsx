@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../api';
 
 interface Quiz {
-  id: string;
+  quizId: string; // backend field
+  id?: string; // fallback
   title: string;
-  description: string;
+  description?: string;
   durationSeconds: number;
   createdBy: string;
-  startTime: string;
-  endTime: string;
+  startTime: string | number;
+  endTime: string | number;
   maxAttempts: number;
   instructor?: {
     id: string;
@@ -138,13 +139,14 @@ export const AssignedQuizzes: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredQuizzes.map(quiz => {
+            const qid = (quiz as any).quizId || (quiz as any).id;
             const isActive = new Date(quiz.startTime) <= new Date() && new Date(quiz.endTime) > new Date();
             const isUpcoming = new Date(quiz.startTime) > new Date();
             const isCompleted = new Date(quiz.endTime) <= new Date();
 
             return (
               <div
-                key={quiz.id}
+                key={qid}
                 className={`rounded-lg border-2 overflow-hidden transition-all hover:shadow-lg ${
                   isActive
                     ? 'border-green-500 bg-gradient-to-br from-green-50 to-white'
@@ -210,7 +212,7 @@ export const AssignedQuizzes: React.FC = () => {
 
                   {/* Action Button */}
                   <button
-                    onClick={() => handleStartQuiz(quiz.id)}
+                    onClick={() => handleStartQuiz(qid)}
                     disabled={isUpcoming || isCompleted}
                     className={`w-full py-2 rounded-lg font-semibold transition-all ${
                       isActive

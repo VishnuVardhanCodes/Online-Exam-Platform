@@ -51,6 +51,8 @@ def create_quiz():
         user_id = get_jwt_identity()
         data = request.get_json()
         
+        print(f"[DEBUG] Creating quiz with data: {data}")
+        
         # Validation
         title = data.get('title', '').strip()
         if not title or len(title) < 3:
@@ -59,7 +61,9 @@ def create_quiz():
         try:
             start_time = datetime.fromtimestamp(data['startTime'] / 1000)
             end_time = datetime.fromtimestamp(data['endTime'] / 1000)
-        except (ValueError, TypeError):
+            print(f"[DEBUG] Start time: {start_time}, End time: {end_time}")
+        except (ValueError, TypeError) as e:
+            print(f"[ERROR] Timestamp conversion failed: {e}")
             return jsonify({'error': 'Invalid timestamp format'}), 400
         
         if start_time >= end_time:
@@ -88,12 +92,14 @@ def create_quiz():
         db.session.add(new_quiz)
         db.session.commit()
         
+        print(f"[SUCCESS] Quiz created: {new_quiz.id}")
         return jsonify({
             'message': 'Quiz created successfully',
             'quiz': new_quiz.to_dict()
         }), 201
     except Exception as e:
         db.session.rollback()
+        print(f"[ERROR] Failed to create quiz: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @quizzes_bp.route('/<quiz_id>', methods=['GET'])

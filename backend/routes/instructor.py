@@ -16,6 +16,8 @@ def create_question():
         user_id = get_jwt_identity()
         data = request.get_json()
         
+        print(f"[DEBUG] Received question data: {data}")
+        
         question_type = data.get('type')
         if question_type not in ['mcq', 'true_false', 'short_answer', 'long_answer']:
             return jsonify({'error': 'Invalid question type'}), 400
@@ -45,10 +47,14 @@ def create_question():
         # Add options for MCQ and True/False
         if question_type in ['mcq', 'true_false']:
             options = data.get('options', [])
+            print(f"[DEBUG] Options received: {options}")
+            
             if not options or len(options) < 2:
                 return jsonify({'error': 'Question must have at least 2 options'}), 400
             
             correct_count = sum(1 for opt in options if opt.get('isCorrect'))
+            print(f"[DEBUG] Correct answers count: {correct_count}")
+            
             if correct_count == 0:
                 return jsonify({'error': 'Question must have at least one correct answer'}), 400
             
@@ -68,6 +74,7 @@ def create_question():
         }), 201
     except Exception as e:
         db.session.rollback()
+        print(f"[ERROR] Failed to create question: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 @instructor_bp.route('/questions/<question_id>', methods=['GET'])

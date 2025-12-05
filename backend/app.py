@@ -1,0 +1,65 @@
+import os
+from flask import Flask
+from flask_cors import CORS
+from flask_jwt_extended import JWTManager
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Create Flask app
+app = Flask(__name__)
+
+# Configuration
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'jwt-secret-key-change-in-production')
+app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///quiz_portal.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Enable CORS
+cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:5173,http://localhost:3000').split(',')
+CORS(app, resources={r"/api/*": {"origins": cors_origins}})
+
+# Initialize JWT
+jwt = JWTManager(app)
+
+# Initialize Database
+from database import db
+db.init_app(app)
+
+# Register Blueprints
+from routes.auth import auth_bp
+from routes.quizzes import quizzes_bp
+from routes.attempts import attempts_bp
+from routes.proctoring import proctoring_bp
+from routes.instructor import instructor_bp
+from routes.admin import admin_bp
+
+app.register_blueprint(auth_bp, url_prefix='/api/auth')
+app.register_blueprint(quizzes_bp, url_prefix='/api/quizzes')
+app.register_blueprint(attempts_bp, url_prefix='/api/attempts')
+app.register_blueprint(proctoring_bp, url_prefix='/api/proctoring')
+app.register_blueprint(instructor_bp, url_prefix='/api/instructor')
+app.register_blueprint(admin_bp, url_prefix='/api/admin')
+
+# Error handlers
+@app.errorhandler(404)
+def not_found(error):
+    return {'error': 'Resource not found'}, 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return {'error': 'Internal server error'}, 500
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    return {'status': 'ok', 'message': 'Quiz Portal API is running'}, 200
+
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+    
+    host = os.getenv('HOST', '0.0.0.0')
+    port = int(os.getenv('PORT', 5000))
+    app.run(host=host, port=port, debug=os.getenv('FLASK_DEBUG', True))

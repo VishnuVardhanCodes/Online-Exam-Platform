@@ -9,7 +9,7 @@ It includes anti-cheat features, adaptive difficulty systems, performance analyt
 
 📁 **Project Structure**
 project-root/
-├── backend/              # Flask REST API
+├── backend/             **# Flask REST API**
 │   ├── app.py           
 │   ├── database.py      
 │   ├── requirements.txt 
@@ -168,6 +168,7 @@ Open a pull request
 📄**License**
 
 MIT License – free for personal and commercial use.
+
 
 
 

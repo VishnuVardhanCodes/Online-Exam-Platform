@@ -3,7 +3,7 @@
 A modern, full-stack, web-based examination system with advanced proctoring, real-time analytics, adaptive difficulty support, and role-based functionality for students, instructors, and administrators.
 
 **📌 Overview**
-
+--
 This project provides a secure and scalable online exam platform designed for classrooms, universities, and corporate assessments.
 It includes anti-cheat features, adaptive difficulty systems, performance analytics, and a highly responsive React + TypeScript UI.
 
@@ -168,6 +168,7 @@ Open a pull request
 MIT License – free for personal and commercial use.
 
 -----------------------
+
 
 
 

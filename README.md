@@ -127,7 +127,6 @@ Node.js ≥ 18
 PostgreSQL (optional, SQLite supported)
 
 🗄️ **Database Models**
-
 User
 Quiz
 Question
@@ -159,7 +158,6 @@ Multi-language support
 Offline mode
 
 🤝 **Contributing**
-
 Fork the repository
 Create a feature branch
 Commit your updates
@@ -168,6 +166,8 @@ Open a pull request
 📄**License**
 
 MIT License – free for personal and commercial use.
+
+-----------------------
 
 
 

@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
 from database import db, Quiz, Question, QuestionOption, Answer, Attempt, User, Quiz_Questions
 from utils.decorators import token_required, role_required, validate_request_json
 from datetime import datetime
@@ -45,6 +46,7 @@ def list_quizzes():
 @token_required
 @role_required('instructor', 'admin')
 @validate_request_json(['title', 'startTime', 'endTime', 'durationSeconds'])
+@jwt_required()
 def create_quiz():
     """Create new quiz (instructor only)"""
     try:
@@ -439,43 +441,43 @@ def _generate_frontend_questions(topic: str, difficulty: str, count: int) -> lis
     """Generate frontend development questions"""
     templates = [
         {
-            "question": f"What hook is used for side effects in React?",
+            "question": "What hook is used for side effects in React?",
             "options": {"A": "useEffect", "B": "useState", "C": "useContext", "D": "useReducer"}
         },
         {
-            "question": f"Which CSS property is used to make a flex container?",
+            "question": "Which CSS property is used to make a flex container?",
             "options": {"A": "display: flex", "B": "position: flex", "C": "layout: flex", "D": "flex: true"}
         },
         {
-            "question": f"What is the virtual DOM in React?",
+            "question": "What is the virtual DOM in React?",
             "options": {"A": "Lightweight copy of the real DOM", "B": "Browser extension", "C": "Server-side rendering", "D": "CSS framework"}
         },
         {
-            "question": f"Which HTML tag is used for the largest heading?",
+            "question": "Which HTML tag is used for the largest heading?",
             "options": {"A": "<h1>", "B": "<heading>", "C": "<head>", "D": "<h6>"}
         },
         {
-            "question": f"What does JSX stand for?",
+            "question": "What does JSX stand for?",
             "options": {"A": "JavaScript XML", "B": "Java Syntax Extension", "C": "JSON XML", "D": "JavaScript Extension"}
         },
         {
-            "question": f"Which method is used to update state in React functional components?",
+            "question": "Which method is used to update state in React functional components?",
             "options": {"A": "useState setter function", "B": "this.setState()", "C": "updateState()", "D": "changeState()"}
         },
         {
-            "question": f"What is the purpose of the 'key' prop in React lists?",
+            "question": "What is the purpose of the 'key' prop in React lists?",
             "options": {"A": "Unique identifier for list items", "B": "Styling attribute", "C": "Event handler", "D": "Data binding"}
         },
         {
-            "question": f"Which CSS unit is relative to the font-size of the root element?",
+            "question": "Which CSS unit is relative to the font-size of the root element?",
             "options": {"A": "rem", "B": "em", "C": "px", "D": "vh"}
         },
         {
-            "question": f"What is the correct way to conditionally render in React?",
+            "question": "What is the correct way to conditionally render in React?",
             "options": {"A": "{condition && <Component />}", "B": "if(condition) <Component />", "C": "<if condition><Component /></if>", "D": "render(condition, Component)"}
         },
         {
-            "question": f"Which event is triggered when a user clicks a button?",
+            "question": "Which event is triggered when a user clicks a button?",
             "options": {"A": "onClick", "B": "onPress", "C": "onTap", "D": "onSelect"}
         },
     ]
@@ -487,35 +489,35 @@ def _generate_database_questions(topic: str, difficulty: str, count: int) -> lis
     """Generate database-related questions"""
     templates = [
         {
-            "question": f"Which SQL command is used to retrieve data from a database?",
+            "question": "Which SQL command is used to retrieve data from a database?",
             "options": {"A": "SELECT", "B": "GET", "C": "FETCH", "D": "RETRIEVE"}
         },
         {
-            "question": f"What does ACID stand for in database transactions?",
+            "question": "What does ACID stand for in database transactions?",
             "options": {"A": "Atomicity, Consistency, Isolation, Durability", "B": "Access, Control, Identity, Data", "C": "Automatic, Concurrent, Isolated, Durable", "D": "Active, Consistent, Indexed, Dynamic"}
         },
         {
-            "question": f"Which SQL clause is used to filter records?",
+            "question": "Which SQL clause is used to filter records?",
             "options": {"A": "WHERE", "B": "FILTER", "C": "HAVING", "D": "LIMIT"}
         },
         {
-            "question": f"What is a primary key in a database?",
+            "question": "What is a primary key in a database?",
             "options": {"A": "Unique identifier for each record", "B": "First column in a table", "C": "Foreign reference", "D": "Index name"}
         },
         {
-            "question": f"Which SQL command is used to add new records?",
+            "question": "Which SQL command is used to add new records?",
             "options": {"A": "INSERT INTO", "B": "ADD RECORD", "C": "CREATE ROW", "D": "APPEND"}
         },
         {
-            "question": f"What is normalization in databases?",
+            "question": "What is normalization in databases?",
             "options": {"A": "Organizing data to reduce redundancy", "B": "Backing up data", "C": "Encrypting data", "D": "Compressing data"}
         },
         {
-            "question": f"Which join returns all records from both tables?",
+            "question": "Which join returns all records from both tables?",
             "options": {"A": "FULL OUTER JOIN", "B": "INNER JOIN", "C": "LEFT JOIN", "D": "CROSS JOIN"}
         },
         {
-            "question": f"What is an index in a database?",
+            "question": "What is an index in a database?",
             "options": {"A": "Data structure to speed up queries", "B": "Primary key", "C": "Table name", "D": "Column type"}
         },
     ]
@@ -527,35 +529,35 @@ def _generate_ml_questions(topic: str, difficulty: str, count: int) -> list:
     """Generate machine learning questions"""
     templates = [
         {
-            "question": f"What is supervised learning?",
+            "question": "What is supervised learning?",
             "options": {"A": "Learning with labeled data", "B": "Learning without labels", "C": "Reinforcement-based learning", "D": "Transfer learning"}
         },
         {
-            "question": f"Which algorithm is used for classification?",
+            "question": "Which algorithm is used for classification?",
             "options": {"A": "Logistic Regression", "B": "Linear Regression", "C": "K-Means", "D": "PCA"}
         },
         {
-            "question": f"What is overfitting in machine learning?",
+            "question": "What is overfitting in machine learning?",
             "options": {"A": "Model performs well on training but poorly on test data", "B": "Model performs poorly on all data", "C": "Model is too simple", "D": "Model has too few parameters"}
         },
         {
-            "question": f"Which technique is used to prevent overfitting?",
+            "question": "Which technique is used to prevent overfitting?",
             "options": {"A": "Regularization", "B": "More training data only", "C": "Increasing model complexity", "D": "Removing validation set"}
         },
         {
-            "question": f"What is a neural network activation function?",
+            "question": "What is a neural network activation function?",
             "options": {"A": "Function that introduces non-linearity", "B": "Loss function", "C": "Optimizer", "D": "Learning rate"}
         },
         {
-            "question": f"What does CNN stand for in deep learning?",
+            "question": "What does CNN stand for in deep learning?",
             "options": {"A": "Convolutional Neural Network", "B": "Connected Neural Network", "C": "Circular Neural Network", "D": "Computed Neural Network"}
         },
         {
-            "question": f"Which metric is used for regression problems?",
+            "question": "Which metric is used for regression problems?",
             "options": {"A": "Mean Squared Error", "B": "Accuracy", "C": "F1 Score", "D": "Precision"}
         },
         {
-            "question": f"What is the purpose of the training set?",
+            "question": "What is the purpose of the training set?",
             "options": {"A": "To train the model", "B": "To test final performance", "C": "To tune hyperparameters", "D": "To deploy the model"}
         },
     ]
@@ -567,35 +569,35 @@ def _generate_network_questions(topic: str, difficulty: str, count: int) -> list
     """Generate networking/security questions"""
     templates = [
         {
-            "question": f"What does HTTP stand for?",
+            "question": "What does HTTP stand for?",
             "options": {"A": "HyperText Transfer Protocol", "B": "High Transfer Text Protocol", "C": "Hyper Transfer Text Protocol", "D": "Home Text Transfer Protocol"}
         },
         {
-            "question": f"Which port does HTTPS use by default?",
+            "question": "Which port does HTTPS use by default?",
             "options": {"A": "443", "B": "80", "C": "8080", "D": "22"}
         },
         {
-            "question": f"What is the purpose of a firewall?",
+            "question": "What is the purpose of a firewall?",
             "options": {"A": "Filter network traffic", "B": "Speed up internet", "C": "Store data", "D": "Compress files"}
         },
         {
-            "question": f"What does DNS stand for?",
+            "question": "What does DNS stand for?",
             "options": {"A": "Domain Name System", "B": "Data Network Service", "C": "Digital Name Server", "D": "Dynamic Network System"}
         },
         {
-            "question": f"Which protocol is used for secure file transfer?",
+            "question": "Which protocol is used for secure file transfer?",
             "options": {"A": "SFTP", "B": "FTP", "C": "HTTP", "D": "SMTP"}
         },
         {
-            "question": f"What is an IP address?",
+            "question": "What is an IP address?",
             "options": {"A": "Unique identifier for a device on a network", "B": "Website name", "C": "Email address", "D": "Password"}
         },
         {
-            "question": f"What is encryption?",
+            "question": "What is encryption?",
             "options": {"A": "Converting data into a coded format", "B": "Compressing data", "C": "Deleting data", "D": "Copying data"}
         },
         {
-            "question": f"Which layer of OSI model handles routing?",
+            "question": "Which layer of OSI model handles routing?",
             "options": {"A": "Network Layer", "B": "Transport Layer", "C": "Data Link Layer", "D": "Application Layer"}
         },
     ]

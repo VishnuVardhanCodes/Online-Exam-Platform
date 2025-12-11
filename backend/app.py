@@ -15,14 +15,32 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-pro
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'sqlite:///quiz_portal.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# JWT configuration (required for flask_jwt_extended)
+app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'super-secret-jwt-key')  # Change in production!
+app.config['JWT_TOKEN_LOCATION'] = ['headers']
+app.config['JWT_HEADER_NAME'] = 'Authorization'
+app.config['JWT_HEADER_TYPE'] = 'Bearer'
+
 # Enable CORS
 cors_origins = os.getenv('CORS_ORIGINS', 'http://localhost:5173,http://localhost:3000').split(',')
 CORS(app, resources={r"/api/*": {"origins": cors_origins, "supports_credentials": True}})
 
 # Initialize LoginManager
+
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
+
+# Custom unauthorized handler for API: return JSON 401 instead of redirect
+@login_manager.unauthorized_handler
+def unauthorized():
+    from flask import request, jsonify
+    # If the request is for API, return JSON 401
+    if request.path.startswith('/api/'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    # Otherwise, fallback to default behavior (redirect)
+    from flask import redirect, url_for
+    return redirect(url_for('auth.login', next=request.url))
 
 # Initialize Database
 from database import db

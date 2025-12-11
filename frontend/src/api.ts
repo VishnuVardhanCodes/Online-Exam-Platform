@@ -14,6 +14,19 @@ class APIClient {
       withCredentials: true, // Enable cookies for session auth
     })
 
+    // Attach JWT token to every request if present
+    this.client.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+          config.headers = config.headers || {};
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+
     // Handle errors
     this.client.interceptors.response.use(
       (response) => response,
@@ -23,7 +36,7 @@ class APIClient {
         }
         return Promise.reject(error)
       }
-    )
+    );
   }
 
   // Auth endpoints
